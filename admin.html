@@ -507,8 +507,18 @@ import { getProducts, updateProduct, deleteProduct, getCategories } from "./js/a
   /* ─── POPULATE EDIT FORM ────────────────────────── */
   function populateEditForm(){
     const p = editingProduct;
-    const cats = getCategories(currentProducts);
-    const catOptions = cats.map(c =>
+    const DEFAULT_CATEGORIES = [
+      "Wooden Crafts",
+      "Wall Art",
+      "Home Decor",
+      "Decorative Items",
+      "Lighting",
+      "Textiles & Weaves",
+      "Temple"
+    ];
+    const fetchedCats = getCategories(currentProducts);
+    const allCats = [...new Set([...DEFAULT_CATEGORIES, ...fetchedCats, p.category].filter(Boolean))].sort();
+    const catOptions = allCats.map(c =>
       `<option value="${esc(c)}"${c === p.category ? ' selected' : ''}>${esc(c)}</option>`
     ).join('');
 
@@ -523,9 +533,15 @@ import { getProducts, updateProduct, deleteProduct, getCategories } from "./js/a
           <label class="form-label">Category</label>
           <select class="form-select" id="editCategory">
             ${catOptions}
-            <option value="__custom__">+ Add custom category</option>
+            <option value="__custom__">+ Add custom category…</option>
           </select>
-          <input class="form-input" id="editCategoryCust" placeholder="Enter new category" style="display:none;margin-top:0.4rem">
+          <div id="editCustomCatRow" style="display:none;margin-top:0.5rem;">
+            <div style="display:flex;gap:0.5rem;align-items:center;">
+              <input class="form-input" id="editCategoryCust" placeholder="Type new category name…" style="flex:1;">
+              <button type="button" id="btnEditAddCustomCat" class="btn-outline" style="padding:0.6rem 1.1rem;white-space:nowrap;font-size:0.75rem;">+ Add</button>
+              <button type="button" id="btnEditCancelCustomCat" class="btn-outline" style="padding:0.6rem 0.8rem;border:none;color:var(--rust);font-size:0.85rem;" title="Cancel">✕</button>
+            </div>
+          </div>
           <div class="form-error-msg" id="editCatErr"></div>
         </div>
         <div class="form-group full">
@@ -573,11 +589,68 @@ import { getProducts, updateProduct, deleteProduct, getCategories } from "./js/a
       </div>
     `;
 
-    // Category custom toggle
+    // Category custom toggle & handlers
     const catSel = document.getElementById('editCategory');
     const catCust = document.getElementById('editCategoryCust');
+    const customRow = document.getElementById('editCustomCatRow');
+    const btnAdd = document.getElementById('btnEditAddCustomCat');
+    const btnCancel = document.getElementById('btnEditCancelCustomCat');
+    let prevEditCatValue = catSel.value;
+
     catSel.addEventListener('change', () => {
-      catCust.style.display = catSel.value === '__custom__' ? 'block' : 'none';
+      if (catSel.value === '__custom__') {
+        customRow.style.display = 'block';
+        catCust.focus();
+      } else {
+        customRow.style.display = 'none';
+        prevEditCatValue = catSel.value;
+        clearErr('editCategory', 'editCatErr');
+        clearErr('editCategoryCust', 'editCatErr');
+      }
+    });
+
+    function applyEditCustomCategory() {
+      const newCat = catCust.value.trim();
+      if (!newCat) {
+        showErr('editCategoryCust', 'editCatErr', 'Please enter a category name');
+        catCust.focus();
+        return;
+      }
+      clearErr('editCategoryCust', 'editCatErr');
+      clearErr('editCategory', 'editCatErr');
+
+      let existingOpt = Array.from(catSel.options).find(
+        opt => opt.value.toLowerCase() === newCat.toLowerCase() && opt.value !== '__custom__'
+      );
+
+      const customOpt = catSel.querySelector('option[value="__custom__"]');
+      if (!existingOpt) {
+        existingOpt = document.createElement('option');
+        existingOpt.value = newCat;
+        existingOpt.textContent = newCat;
+        catSel.insertBefore(existingOpt, customOpt);
+      }
+
+      catSel.value = existingOpt.value;
+      prevEditCatValue = existingOpt.value;
+      customRow.style.display = 'none';
+      catCust.value = '';
+    }
+
+    btnAdd.addEventListener('click', applyEditCustomCategory);
+    btnCancel.addEventListener('click', () => {
+      customRow.style.display = 'none';
+      catCust.value = '';
+      catSel.value = prevEditCatValue;
+      clearErr('editCategoryCust', 'editCatErr');
+      clearErr('editCategory', 'editCatErr');
+    });
+
+    catCust.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        applyEditCustomCategory();
+      }
     });
 
     // Image upload
@@ -677,7 +750,17 @@ import { getProducts, updateProduct, deleteProduct, getCategories } from "./js/a
     // Validate
     let valid = true;
     if (!name) { showErr('editName','editNameErr','Product name is required'); valid = false; } else clearErr('editName','editNameErr');
-    if (!category) { showErr('editCategory','editCatErr','Category is required'); valid = false; } else clearErr('editCategory','editCatErr');
+    if (!category) {
+      if (document.getElementById('editCategory').value === '__custom__') {
+        showErr('editCategoryCust', 'editCatErr', 'Please enter a custom category name');
+      } else {
+        showErr('editCategory', 'editCatErr', 'Category is required');
+      }
+      valid = false;
+    } else {
+      clearErr('editCategory', 'editCatErr');
+      clearErr('editCategoryCust', 'editCatErr');
+    }
     if (!shortDesc) { showErr('editShortDesc','editShortErr','Short description is required'); valid = false; } else clearErr('editShortDesc','editShortErr');
     if (!valid) return;
 

@@ -187,9 +187,15 @@
         <select class="form-select" id="pCategory">
           <option value="">Select category…</option>
           <!-- populated from existing categories -->
-          <option value="__custom__">+ Add custom category</option>
+          <option value="__custom__">+ Add custom category…</option>
         </select>
-        <input class="form-input" id="pCategoryCust" type="text" placeholder="Enter new category" style="display:none;margin-top:0.4rem">
+        <div id="customCatRow" style="display:none;margin-top:0.5rem;">
+          <div style="display:flex;gap:0.5rem;align-items:center;">
+            <input class="form-input" id="pCategoryCust" type="text" placeholder="Type new category name…" style="flex:1;">
+            <button type="button" id="btnAddCustomCat" class="btn-outline" style="padding:0.6rem 1.1rem;white-space:nowrap;font-size:0.75rem;">+ Add</button>
+            <button type="button" id="btnCancelCustomCat" class="btn-outline" style="padding:0.6rem 0.8rem;border:none;color:var(--rust);font-size:0.85rem;" title="Cancel">✕</button>
+          </div>
+        </div>
         <div class="form-error-msg" id="pCatErr"></div>
       </div>
 
@@ -306,18 +312,89 @@ import { getProducts, createProduct, getCategories } from "./js/api.js";
   const idValue = document.getElementById('idValue');
   const catSelect = document.getElementById('pCategory');
   const catCust = document.getElementById('pCategoryCust');
+  const customCatRow = document.getElementById('customCatRow');
+  const btnAddCustomCat = document.getElementById('btnAddCustomCat');
+  const btnCancelCustomCat = document.getElementById('btnCancelCustomCat');
   const uploadZone = document.getElementById('uploadZone');
   const fileInput = document.getElementById('fileInput');
   const toast = document.getElementById('toast');
 
   /* ─── POPULATE CATEGORIES ───────────────────────── */
-  const cats = getCategories(existingProducts);
+  const DEFAULT_CATEGORIES = [
+    "Wooden Crafts",
+    "Wall Art",
+    "Home Decor",
+    "Decorative Items",
+    "Lighting",
+    "Textiles & Weaves",
+    "Temple"
+  ];
+  const fetchedCats = getCategories(existingProducts);
+  const cats = [...new Set([...DEFAULT_CATEGORIES, ...fetchedCats])].sort();
   const customOpt = catSelect.querySelector('option[value="__custom__"]');
   cats.forEach(c => {
     const opt = document.createElement('option');
     opt.value = c;
     opt.textContent = c;
     catSelect.insertBefore(opt, customOpt);
+  });
+
+  /* ─── CATEGORY CUSTOM TOGGLE & ADD ──────────────── */
+  let prevCatValue = catSelect.value;
+  catSelect.addEventListener('change', () => {
+    if (catSelect.value === '__custom__') {
+      customCatRow.style.display = 'block';
+      catCust.focus();
+    } else {
+      customCatRow.style.display = 'none';
+      prevCatValue = catSelect.value;
+      clearErr('pCategory', 'pCatErr');
+      clearErr('pCategoryCust', 'pCatErr');
+    }
+  });
+
+  function applyCustomCategory() {
+    const newCat = catCust.value.trim();
+    if (!newCat) {
+      showErr('pCategoryCust', 'pCatErr', 'Please enter a category name');
+      catCust.focus();
+      return;
+    }
+    clearErr('pCategoryCust', 'pCatErr');
+    clearErr('pCategory', 'pCatErr');
+
+    // Check if category already exists in select (case-insensitive)
+    let existingOpt = Array.from(catSelect.options).find(
+      opt => opt.value.toLowerCase() === newCat.toLowerCase() && opt.value !== '__custom__'
+    );
+
+    if (!existingOpt) {
+      existingOpt = document.createElement('option');
+      existingOpt.value = newCat;
+      existingOpt.textContent = newCat;
+      catSelect.insertBefore(existingOpt, customOpt);
+    }
+
+    catSelect.value = existingOpt.value;
+    prevCatValue = existingOpt.value;
+    customCatRow.style.display = 'none';
+    catCust.value = '';
+  }
+
+  btnAddCustomCat.addEventListener('click', applyCustomCategory);
+  btnCancelCustomCat.addEventListener('click', () => {
+    customCatRow.style.display = 'none';
+    catCust.value = '';
+    catSelect.value = prevCatValue || '';
+    clearErr('pCategoryCust', 'pCatErr');
+    clearErr('pCategory', 'pCatErr');
+  });
+
+  catCust.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      applyCustomCategory();
+    }
   });
 
   /* ─── LIVE ID PREVIEW ───────────────────────────── */
@@ -329,11 +406,6 @@ import { getProducts, createProduct, getCategories } from "./js/api.js";
     } else {
       idPreview.style.display = 'none';
     }
-  });
-
-  /* ─── CATEGORY CUSTOM TOGGLE ────────────────────── */
-  catSelect.addEventListener('change', () => {
-    catCust.style.display = catSelect.value === '__custom__' ? 'block' : 'none';
   });
 
   /* ─── IMAGE UPLOAD ──────────────────────────────── */
@@ -425,7 +497,17 @@ import { getProducts, createProduct, getCategories } from "./js/api.js";
     // Validate
     let valid = true;
     if (!name) { showErr('pName','pNameErr','Product name is required'); valid = false; } else clearErr('pName','pNameErr');
-    if (!category) { showErr('pCategory','pCatErr','Category is required'); valid = false; } else clearErr('pCategory','pCatErr');
+    if (!category) {
+      if (catSelect.value === '__custom__') {
+        showErr('pCategoryCust', 'pCatErr', 'Please enter a custom category name');
+      } else {
+        showErr('pCategory', 'pCatErr', 'Category is required');
+      }
+      valid = false;
+    } else {
+      clearErr('pCategory', 'pCatErr');
+      clearErr('pCategoryCust', 'pCatErr');
+    }
     if (!shortDesc) { showErr('pShortDesc','pShortErr','Short description is required'); valid = false; } else clearErr('pShortDesc','pShortErr');
 
     // Check for duplicate ID
