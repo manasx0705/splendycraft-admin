@@ -303,7 +303,12 @@ import { getProducts, createProduct, getCategories } from "./js/api.js";
   let dragSrcIndex = null;
   
   // Fetch existing products to populate categories and check for duplicate IDs
-  const existingProducts = await getProducts();
+  let existingProducts = [];
+  try {
+    existingProducts = await getProducts();
+  } catch (err) {
+    console.warn('Could not fetch existing products:', err.message);
+  }
 
   /* ─── DOM REFS ──────────────────────────────────── */
   const form = document.getElementById('addForm');
