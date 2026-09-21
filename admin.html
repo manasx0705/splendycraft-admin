@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — SplendyCraft</title>
+<link rel="icon" type="image/png" href="./logo.jpeg">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Cinzel:wght@400;600;700&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+/* ── ADMIN HEADER ─────────────────────────────────── */
+.admin-header{
+  padding:7.5rem 4.5rem 2.5rem;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:1.2rem;
+}
+.admin-title{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(2rem,4vw,2.8rem);font-weight:300;
+  color:var(--dark);line-height:1.15;
+}
+.admin-title em{font-style:italic;color:var(--rust)}
+.add-btn{
+  display:inline-flex;align-items:center;gap:0.65rem;
+  padding:0.85rem 1.8rem;
+  background:linear-gradient(135deg,var(--gold),var(--gold-lt));
+  color:var(--dark);font-family:'Jost',sans-serif;font-size:0.76rem;
+  letter-spacing:0.14em;text-transform:uppercase;font-weight:600;
+  border:none;cursor:pointer;text-decoration:none;
+  transition:all 0.35s;
+  box-shadow:0 6px 24px rgba(201,151,58,0.3);
+}
+.add-btn:hover{
+  transform:translateY(-2px);
+  box-shadow:0 10px 32px rgba(201,151,58,0.45);
+}
+.add-btn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+
+/* ── PRODUCT GRID ─────────────────────────────────── */
+.admin-grid-section{padding:2rem 4.5rem 8rem;background:var(--ivory)}
+.admin-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:2rem}
+
+/* Card (reuses .product-card classes from products.html but adds checkbox) */
+.admin-card{
+  background:var(--cream);border:1px solid rgba(201,151,58,0.14);
+  display:flex;flex-direction:column;overflow:hidden;position:relative;
+  transition:transform 0.4s cubic-bezier(0.22,1,0.36,1),box-shadow 0.4s cubic-bezier(0.22,1,0.36,1),border-color 0.4s;
+}
+.admin-card:hover{transform:translateY(-6px);box-shadow:0 20px 44px rgba(90,52,16,0.14);border-color:rgba(201,151,58,0.35)}
+.admin-card.selected{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold)}
+.admin-card-img{width:100%;height:260px;overflow:hidden;position:relative;background:#EFE6D4}
+.admin-card-img img{width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.6s cubic-bezier(0.22,1,0.36,1)}
+.admin-card:hover .admin-card-img img{transform:scale(1.06)}
+.admin-card-category{
+  position:absolute;top:0.9rem;left:0.9rem;
+  font-size:0.6rem;letter-spacing:0.14em;text-transform:uppercase;
+  background:rgba(26,18,8,0.72);color:var(--gold-pale);padding:0.35rem 0.75rem;
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+}
+.admin-card-body{padding:1.4rem 1.4rem 1.6rem;display:flex;flex-direction:column;flex:1}
+.admin-card-name{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:400;color:var(--dark);margin-bottom:0.5rem;line-height:1.2}
+.admin-card-desc{font-size:0.85rem;line-height:1.6;font-weight:300;color:var(--brown);flex:1}
+
+/* Checkbox */
+.admin-card-check{
+  position:absolute;top:0.9rem;right:0.9rem;z-index:5;
+  width:28px;height:28px;border-radius:6px;
+  border:2px solid rgba(253,248,240,0.7);
+  background:rgba(26,18,8,0.45);backdrop-filter:blur(4px);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all 0.25s;
+}
+.admin-card-check:hover{border-color:var(--gold-lt);background:rgba(26,18,8,0.65)}
+.admin-card-check.checked{background:var(--gold);border-color:var(--gold)}
+.admin-card-check svg{width:16px;height:16px;stroke:var(--ivory);stroke-width:2.5;fill:none;opacity:0;transition:opacity 0.2s}
+.admin-card-check.checked svg{opacity:1}
+
+/* ── FLOATING ACTION BAR ──────────────────────────── */
+.action-bar{
+  position:fixed;bottom:0;left:0;right:0;z-index:300;
+  background:rgba(26,18,8,0.92);
+  backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  border-top:1px solid rgba(201,151,58,0.2);
+  padding:1.1rem 4.5rem;
+  display:flex;align-items:center;justify-content:space-between;
+  transform:translateY(100%);
+  transition:transform 0.4s cubic-bezier(0.22,1,0.36,1);
+}
+.action-bar.visible{transform:translateY(0)}
+.action-bar-info{font-size:0.82rem;color:var(--gold-pale);font-weight:300}
+.action-bar-info strong{font-weight:600;color:var(--gold)}
+.action-bar-buttons{display:flex;gap:0.8rem}
+.action-bar-buttons button{
+  padding:0.7rem 1.5rem;font-family:'Jost',sans-serif;
+  font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;font-weight:500;
+  border:none;cursor:pointer;transition:all 0.3s;
+}
+.btn-edit{background:var(--gold);color:var(--dark)}
+.btn-edit:hover{background:var(--gold-lt);box-shadow:0 4px 16px rgba(201,151,58,0.4)}
+.btn-remove{background:var(--rust);color:var(--ivory)}
+.btn-remove:hover{background:var(--rust-lt);box-shadow:0 4px 16px rgba(160,69,26,0.4)}
+.btn-cancel-bar{background:transparent;color:var(--gold-pale);border:1px solid rgba(201,151,58,0.3) !important}
+.btn-cancel-bar:hover{border-color:var(--gold) !important;color:var(--gold)}
+
+/* ── CONFIRMATION MODAL ───────────────────────────── */
+.modal-backdrop{
+  position:fixed;inset:0;z-index:400;
+  background:rgba(26,18,8,0.7);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity 0.35s;
+}
+.modal-backdrop.open{opacity:1;pointer-events:auto}
+.modal-box{
+  background:var(--cream);max-width:440px;width:90%;padding:2.5rem 2.2rem;
+  box-shadow:0 30px 80px rgba(0,0,0,0.35);
+  transform:translateY(20px) scale(0.97);transition:transform 0.35s cubic-bezier(0.22,1,0.36,1);
+}
+.modal-backdrop.open .modal-box{transform:translateY(0) scale(1)}
+.modal-title{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:400;color:var(--dark);margin-bottom:0.8rem}
+.modal-text{font-size:0.92rem;line-height:1.7;color:var(--brown);font-weight:300;margin-bottom:2rem}
+.modal-buttons{display:flex;gap:0.8rem;justify-content:flex-end}
+.modal-buttons button{
+  padding:0.7rem 1.5rem;font-family:'Jost',sans-serif;
+  font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;font-weight:500;
+  border:none;cursor:pointer;transition:all 0.3s;
+}
+.modal-btn-cancel{background:transparent;color:var(--brown);border:1px solid rgba(160,69,26,0.3) !important}
+.modal-btn-cancel:hover{border-color:var(--rust) !important;color:var(--rust)}
+.modal-btn-remove{background:var(--rust);color:var(--ivory)}
+.modal-btn-remove:hover{background:var(--rust-lt);box-shadow:0 4px 16px rgba(160,69,26,0.4)}
+
+/* ── EDIT BOTTOM SHEET ────────────────────────────── */
+.sheet-backdrop{
+  position:fixed;inset:0;z-index:350;
+  background:rgba(26,18,8,0.65);
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  opacity:0;pointer-events:none;transition:opacity 0.4s;
+}
+.sheet-backdrop.open{opacity:1;pointer-events:auto}
+.sheet{
+  position:fixed;bottom:0;left:0;right:0;z-index:360;
+  height:88vh;
+  background:var(--ivory);
+  box-shadow:0 -20px 80px rgba(0,0,0,0.3);
+  transform:translateY(100%);
+  transition:transform 0.5s cubic-bezier(0.22,1,0.36,1);
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+.sheet.open{transform:translateY(0)}
+.sheet-header{
+  padding:1.5rem 2.5rem;
+  border-bottom:1px solid rgba(201,151,58,0.15);
+  display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;
+}
+.sheet-title{font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:400;color:var(--dark)}
+.sheet-title em{color:var(--rust);font-style:italic}
+.sheet-close{
+  width:36px;height:36px;border-radius:50%;border:1px solid rgba(160,69,26,0.25);
+  background:transparent;color:var(--brown);font-size:1.2rem;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.25s;
+}
+.sheet-close:hover{border-color:var(--rust);color:var(--rust);background:rgba(160,69,26,0.06)}
+.sheet-body{flex:1;overflow-y:auto;padding:2rem 2.5rem 2rem}
+.sheet-footer{
+  padding:1.2rem 2.5rem;
+  border-top:1px solid rgba(201,151,58,0.15);
+  display:flex;gap:0.8rem;justify-content:flex-end;
+  flex-shrink:0;
+}
+
+/* ── FORM FIELDS (shared between sheet and add-product) ── */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.8rem 2.2rem}
+.form-group{display:flex;flex-direction:column;gap:0.45rem}
+.form-group.full{grid-column:1/-1}
+.form-label{
+  font-size:0.66rem;letter-spacing:0.14em;text-transform:uppercase;
+  color:var(--rust);font-weight:500;
+}
+.form-input,.form-textarea,.form-select{
+  width:100%;padding:0.8rem 1rem;
+  font-family:'Jost',sans-serif;font-size:0.9rem;font-weight:300;color:var(--dark);
+  border:1px solid rgba(160,69,26,0.22);background:rgba(255,255,255,0.6);
+  transition:border-color 0.25s,box-shadow 0.25s;
+}
+.form-input:focus,.form-textarea:focus,.form-select:focus{
+  outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,151,58,0.12);
+}
+.form-input.error,.form-textarea.error,.form-select.error{border-color:var(--rust);box-shadow:0 0 0 3px rgba(160,69,26,0.12)}
+.form-textarea{min-height:90px;resize:vertical;line-height:1.7}
+.form-textarea.tall{min-height:140px}
+.form-select{cursor:pointer;appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7' viewBox='0 0 12 7'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235A3410' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 1rem center;padding-right:2.5rem;
+}
+.form-error-msg{font-size:0.74rem;color:var(--rust);font-weight:400;min-height:1em}
+
+/* ── IMAGE UPLOAD ─────────────────────────────────── */
+.img-upload-zone{
+  border:2px dashed rgba(160,69,26,0.25);padding:2rem;text-align:center;
+  cursor:pointer;transition:all 0.3s;background:rgba(255,255,255,0.4);
+  min-height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.6rem;
+}
+.img-upload-zone:hover,.img-upload-zone.dragover{border-color:var(--gold);background:rgba(201,151,58,0.06)}
+.img-upload-zone svg{width:32px;height:32px;stroke:var(--brown);fill:none;stroke-width:1.5;opacity:0.5}
+.img-upload-zone p{font-size:0.82rem;color:var(--brown);font-weight:300}
+.img-upload-zone p strong{font-weight:500;color:var(--rust)}
+.img-previews{display:flex;flex-wrap:wrap;gap:0.8rem;margin-top:1rem}
+.img-preview-item{
+  position:relative;width:100px;height:100px;overflow:hidden;
+  border:2px solid rgba(201,151,58,0.2);background:#EFE6D4;
+  cursor:grab;transition:border-color 0.25s;
+}
+.img-preview-item:hover{border-color:var(--gold)}
+.img-preview-item.primary{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold)}
+.img-preview-item img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+.img-preview-remove{
+  position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;
+  background:rgba(160,69,26,0.85);color:var(--ivory);border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;font-size:0.7rem;
+  transition:background 0.2s;
+}
+.img-preview-remove:hover{background:var(--rust)}
+.img-preview-primary{
+  position:absolute;bottom:4px;left:4px;
+  font-size:0.5rem;letter-spacing:0.08em;text-transform:uppercase;
+  background:var(--gold);color:var(--dark);padding:2px 6px;font-weight:600;
+}
+.img-preview-item.dragging{opacity:0.4;border-style:dashed}
+
+/* ── BUTTONS ──────────────────────────────────────── */
+.btn-save{
+  padding:0.75rem 1.8rem;
+  background:linear-gradient(135deg,var(--gold),var(--gold-lt));
+  color:var(--dark);font-family:'Jost',sans-serif;
+  font-size:0.74rem;letter-spacing:0.12em;text-transform:uppercase;font-weight:600;
+  border:none;cursor:pointer;transition:all 0.3s;
+  box-shadow:0 4px 16px rgba(201,151,58,0.3);
+}
+.btn-save:hover{transform:translateY(-1px);box-shadow:0 6px 22px rgba(201,151,58,0.45)}
+.btn-outline{
+  padding:0.75rem 1.8rem;background:transparent;
+  color:var(--brown);font-family:'Jost',sans-serif;
+  font-size:0.74rem;letter-spacing:0.12em;text-transform:uppercase;font-weight:500;
+  border:1px solid rgba(160,69,26,0.3);cursor:pointer;transition:all 0.3s;
+}
+.btn-outline:hover{border-color:var(--rust);color:var(--rust)}
+
+/* ── EMPTY STATE ──────────────────────────────────── */
+.admin-empty{text-align:center;padding:5rem 1rem;color:var(--brown)}
+.admin-empty h3{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:400;color:var(--dark);margin-bottom:0.6rem}
+.admin-empty p{font-size:0.92rem;font-weight:300}
+
+/* ── RESPONSIVE ───────────────────────────────────── */
+@media(max-width:880px){
+  .admin-header{padding:6.5rem 1.5rem 2rem}
+  .admin-grid-section{padding:1.5rem 1.5rem 7rem}
+  .admin-grid{grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1.4rem}
+  .action-bar{padding:1rem 1.5rem}
+  .sheet-header{padding:1.2rem 1.5rem}
+  .sheet-body{padding:1.5rem 1.5rem}
+  .sheet-footer{padding:1rem 1.5rem}
+  .form-grid{grid-template-columns:1fr;gap:1.4rem}
+  .sheet{height:94vh}
+}
+@media(max-width:520px){
+  .admin-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<nav id="nav">
+  <div class="nav-logo">Splendy<em>Craft</em></div>
+  <ul class="nav-links">
+    <li><a href="admin.html" class="active">Dashboard</a></li>
+    <li><a href="add-product.html">Add Product</a></li>
+    <li><a href="products.html" target="_blank">View Site</a></li>
+    <li><a href="#" id="logoutBtn" style="color: var(--rust);">Logout</a></li>
+  </ul>
+</nav>
+
+<!-- ADMIN HEADER -->
+<header class="admin-header">
+  <h1 class="admin-title">Product <em>Dashboard</em></h1>
+  <a href="add-product.html" class="add-btn">
+    <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    Add Product
+  </a>
+</header>
+
+<!-- PRODUCT GRID -->
+<section class="admin-grid-section">
+  <div class="admin-grid" id="adminGrid"></div>
+  <div class="admin-empty" id="adminEmpty" style="display:none">
+    <h3>No products yet</h3>
+    <p>Click "Add Product" above to create your first listing.</p>
+  </div>
+</section>
+
+<!-- FLOATING ACTION BAR -->
+<div class="action-bar" id="actionBar">
+  <div class="action-bar-info"><strong id="selectedCount">0</strong> product(s) selected</div>
+  <div class="action-bar-buttons">
+    <button class="btn-edit" id="btnEdit" type="button">Edit</button>
+    <button class="btn-remove" id="btnRemove" type="button">Remove</button>
+    <button class="btn-cancel-bar" id="btnCancelBar" type="button">Cancel</button>
+  </div>
+</div>
+
+<!-- CONFIRMATION MODAL -->
+<div class="modal-backdrop" id="removeModal">
+  <div class="modal-box">
+    <div class="modal-title">Remove Products</div>
+    <div class="modal-text">Are you sure you want to permanently remove the selected product(s)?<br>This action cannot be undone.</div>
+    <div class="modal-buttons">
+      <button class="modal-btn-cancel" id="modalCancel" type="button">Cancel</button>
+      <button class="modal-btn-remove" id="modalConfirm" type="button">Remove</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT BOTTOM SHEET -->
+<div class="sheet-backdrop" id="sheetBackdrop"></div>
+<div class="sheet" id="editSheet">
+  <div class="sheet-header">
+    <div class="sheet-title">Edit <em>Product</em></div>
+    <button class="sheet-close" id="sheetClose" type="button">✕</button>
+  </div>
+  <div class="sheet-body" id="sheetBody">
+    <!-- populated dynamically -->
+  </div>
+  <div class="sheet-footer">
+    <button class="btn-outline" id="sheetCancel" type="button">Cancel</button>
+    <button class="btn-save" id="sheetSave" type="button">Save Changes</button>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-top">
+    <div class="footer-logo">Splendy<em>Craft</em></div>
+    <div class="footer-tagline">Admin Portal</div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 SplendyCraft. All rights reserved.</span>
+    <span>Internal use only ✦</span>
+  </div>
+</footer>
+
+<script type="module">
+import { requireAuth, logout } from "./js/auth.js";
+import { getProducts, updateProduct, deleteProduct, getCategories } from "./js/api.js";
+
+(async function(){
+  // Guard the page
+  await requireAuth();
+
+  document.getElementById('logoutBtn').addEventListener('click', (e) => {
+    e.preventDefault();
+    logout();
+  });
+
+  /* ─── STATE ─────────────────────────────────────── */
+  let currentProducts = [];          // loaded products
+  let selected = new Set();          // set of selected product ids
+  let editingProduct = null;         // product object being edited
+  let editImageList = [];            // images array for the edit form ({ file: File, url: String } or just { url: String })
+  let dragSrcIndex = null;           // drag-reorder state
+
+  /* ─── DOM REFS ──────────────────────────────────── */
+  const grid       = document.getElementById('adminGrid');
+  const emptyState = document.getElementById('adminEmpty');
+  const actionBar  = document.getElementById('actionBar');
+  const btnEdit    = document.getElementById('btnEdit');
+  const btnRemove  = document.getElementById('btnRemove');
+  const btnCancel  = document.getElementById('btnCancelBar');
+  const selCount   = document.getElementById('selectedCount');
+  const removeModal = document.getElementById('removeModal');
+  const modalCancel = document.getElementById('modalCancel');
+  const modalConfirm = document.getElementById('modalConfirm');
+  const sheetBackdrop = document.getElementById('sheetBackdrop');
+  const editSheet     = document.getElementById('editSheet');
+  const sheetBody     = document.getElementById('sheetBody');
+  const sheetClose    = document.getElementById('sheetClose');
+  const sheetCancel   = document.getElementById('sheetCancel');
+  const sheetSave     = document.getElementById('sheetSave');
+
+  /* ─── LOAD DATA ─────────────────────────────────── */
+  async function loadData() {
+      currentProducts = await getProducts();
+      render();
+  }
+
+  /* ─── RENDER GRID ───────────────────────────────── */
+  function render(){
+    grid.innerHTML = '';
+    emptyState.style.display = currentProducts.length === 0 ? 'block' : 'none';
+
+    currentProducts.forEach(p => {
+      const card = document.createElement('div');
+      card.className = 'admin-card' + (selected.has(p.id) ? ' selected' : '');
+      card.innerHTML = `
+        <div class="admin-card-check${selected.has(p.id) ? ' checked' : ''}" data-id="${p.id}">
+          <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div class="admin-card-img">
+          <span class="admin-card-category">${esc(p.category)}</span>
+          <img src="${esc(p.images[0])}" alt="${esc(p.name)}" loading="lazy">
+        </div>
+        <div class="admin-card-body">
+          <div class="admin-card-name">${esc(p.name)}</div>
+          <div class="admin-card-desc">${esc(p.shortDescription)}</div>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+
+    // Bind checkbox clicks
+    grid.querySelectorAll('.admin-card-check').forEach(el => {
+      el.addEventListener('click', e => {
+        e.stopPropagation();
+        const id = el.dataset.id;
+        if (selected.has(id)) selected.delete(id); else selected.add(id);
+        updateSelection();
+        render();
+      });
+    });
+
+    updateSelection();
+  }
+
+  /* ─── SELECTION UI ──────────────────────────────── */
+  function updateSelection(){
+    const count = selected.size;
+    selCount.textContent = count;
+    actionBar.classList.toggle('visible', count > 0);
+    btnEdit.style.display = count === 1 ? 'inline-block' : 'none';
+  }
+
+  function clearSelection(){
+    selected.clear();
+    updateSelection();
+    render();
+  }
+
+  /* ─── CANCEL ────────────────────────────────────── */
+  btnCancel.addEventListener('click', clearSelection);
+
+  /* ─── REMOVE FLOW ───────────────────────────────── */
+  btnRemove.addEventListener('click', () => {
+    removeModal.classList.add('open');
+  });
+  modalCancel.addEventListener('click', () => {
+    removeModal.classList.remove('open');
+  });
+  modalConfirm.addEventListener('click', async () => {
+    modalConfirm.disabled = true;
+    modalConfirm.textContent = 'Removing...';
+    
+    try {
+        for (const id of selected) {
+            await deleteProduct(id);
+        }
+        await loadData();
+        removeModal.classList.remove('open');
+        clearSelection();
+    } catch (err) {
+        alert('Error removing products: ' + err.message);
+    } finally {
+        modalConfirm.disabled = false;
+        modalConfirm.textContent = 'Remove';
+    }
+  });
+
+  /* ─── EDIT FLOW ─────────────────────────────────── */
+  btnEdit.addEventListener('click', () => {
+    const id = [...selected][0];
+    editingProduct = currentProducts.find(p => p.id === id);
+    if (!editingProduct) return;
+    
+    // Map existing images to our format (no File object)
+    editImageList = editingProduct.images.map(url => ({ url: url }));
+    openSheet();
+  });
+
+  function openSheet(){
+    populateEditForm();
+    sheetBackdrop.classList.add('open');
+    editSheet.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeSheet(){
+    sheetBackdrop.classList.remove('open');
+    editSheet.classList.remove('open');
+    document.body.style.overflow = '';
+    editingProduct = null;
+    editImageList = [];
+  }
+
+  sheetClose.addEventListener('click', closeSheet);
+  sheetCancel.addEventListener('click', closeSheet);
+  sheetBackdrop.addEventListener('click', closeSheet);
+
+  /* ─── POPULATE EDIT FORM ────────────────────────── */
+  function populateEditForm(){
+    const p = editingProduct;
+    const cats = getCategories(currentProducts);
+    const catOptions = cats.map(c =>
+      `<option value="${esc(c)}"${c === p.category ? ' selected' : ''}>${esc(c)}</option>`
+    ).join('');
+
+    sheetBody.innerHTML = `
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Product Name</label>
+          <input class="form-input" id="editName" value="${escAttr(p.name)}">
+          <div class="form-error-msg" id="editNameErr"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <select class="form-select" id="editCategory">
+            ${catOptions}
+            <option value="__custom__">+ Add custom category</option>
+          </select>
+          <input class="form-input" id="editCategoryCust" placeholder="Enter new category" style="display:none;margin-top:0.4rem">
+          <div class="form-error-msg" id="editCatErr"></div>
+        </div>
+        <div class="form-group full">
+          <label class="form-label">Short Description</label>
+          <textarea class="form-textarea" id="editShortDesc">${esc(p.shortDescription)}</textarea>
+          <div class="form-error-msg" id="editShortErr"></div>
+        </div>
+        <div class="form-group full">
+          <label class="form-label">Long Description</label>
+          <textarea class="form-textarea tall" id="editLongDesc">${esc(p.longDescription)}</textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Material</label>
+          <input class="form-input" id="editMaterial" value="${escAttr(p.material)}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Dimensions</label>
+          <input class="form-input" id="editDimensions" value="${escAttr(p.dimensions)}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Color</label>
+          <input class="form-input" id="editColor" value="${escAttr(p.color)}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Availability</label>
+          <input class="form-input" id="editAvailability" value="${escAttr(p.availability)}">
+        </div>
+        <div class="form-group full">
+          <label class="form-label">Craftsmanship</label>
+          <textarea class="form-textarea" id="editCraft">${esc(p.craftsmanship)}</textarea>
+        </div>
+        <div class="form-group full">
+          <label class="form-label">Care Instructions</label>
+          <textarea class="form-textarea" id="editCare">${esc(p.care)}</textarea>
+        </div>
+        <div class="form-group full">
+          <label class="form-label">Images</label>
+          <div class="img-upload-zone" id="editUploadZone">
+            <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <p><strong>Click to upload</strong> or drag and drop</p>
+          </div>
+          <input type="file" id="editFileInput" accept="image/*" multiple style="display:none">
+          <div class="img-previews" id="editPreviews"></div>
+        </div>
+      </div>
+    `;
+
+    // Category custom toggle
+    const catSel = document.getElementById('editCategory');
+    const catCust = document.getElementById('editCategoryCust');
+    catSel.addEventListener('change', () => {
+      catCust.style.display = catSel.value === '__custom__' ? 'block' : 'none';
+    });
+
+    // Image upload
+    setupImageUpload('editUploadZone', 'editFileInput');
+    renderEditPreviews();
+  }
+
+  /* ─── IMAGE UPLOAD HELPERS ──────────────────────── */
+  function setupImageUpload(zoneId, inputId){
+    const zone = document.getElementById(zoneId);
+    const input = document.getElementById(inputId);
+
+    zone.addEventListener('click', () => input.click());
+    zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+    zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+    zone.addEventListener('drop', e => {
+      e.preventDefault(); zone.classList.remove('dragover');
+      handleFiles(e.dataTransfer.files);
+    });
+    input.addEventListener('change', () => {
+      handleFiles(input.files);
+      input.value = '';
+    });
+  }
+
+  function handleFiles(files){
+    [...files].forEach(file => {
+      if (!file.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        editImageList.push({ file: file, url: e.target.result });
+        renderEditPreviews();
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function renderEditPreviews(){
+    const container = document.getElementById('editPreviews');
+    container.innerHTML = '';
+
+    editImageList.forEach((imgObj, i) => {
+      const src = imgObj.url;
+      const item = document.createElement('div');
+      item.className = 'img-preview-item' + (i === 0 ? ' primary' : '');
+      item.draggable = true;
+      item.dataset.index = i;
+      item.innerHTML = `
+        <img src="${src}" alt="Image ${i+1}">
+        <button class="img-preview-remove" type="button" data-index="${i}">✕</button>
+        ${i === 0 ? '<span class="img-preview-primary">Primary</span>' : ''}
+      `;
+
+      // Remove
+      item.querySelector('.img-preview-remove').addEventListener('click', e => {
+        e.stopPropagation();
+        editImageList.splice(i, 1);
+        renderEditPreviews();
+      });
+
+      // Click to set as primary
+      item.addEventListener('click', () => {
+        if (i === 0) return;
+        const [moved] = editImageList.splice(i, 1);
+        editImageList.unshift(moved);
+        renderEditPreviews();
+      });
+
+      // Drag reorder
+      item.addEventListener('dragstart', e => {
+        dragSrcIndex = i;
+        item.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+      });
+      item.addEventListener('dragend', () => item.classList.remove('dragging'));
+      item.addEventListener('dragover', e => e.preventDefault());
+      item.addEventListener('drop', e => {
+        e.preventDefault();
+        if (dragSrcIndex === null || dragSrcIndex === i) return;
+        const [moved] = editImageList.splice(dragSrcIndex, 1);
+        editImageList.splice(i, 0, moved);
+        dragSrcIndex = null;
+        renderEditPreviews();
+      });
+
+      container.appendChild(item);
+    });
+  }
+
+  /* ─── SAVE EDIT ─────────────────────────────────── */
+  sheetSave.addEventListener('click', async () => {
+    const name = document.getElementById('editName').value.trim();
+    let category = document.getElementById('editCategory').value;
+    if (category === '__custom__') category = document.getElementById('editCategoryCust').value.trim();
+    const shortDesc = document.getElementById('editShortDesc').value.trim();
+
+    // Validate
+    let valid = true;
+    if (!name) { showErr('editName','editNameErr','Product name is required'); valid = false; } else clearErr('editName','editNameErr');
+    if (!category) { showErr('editCategory','editCatErr','Category is required'); valid = false; } else clearErr('editCategory','editCatErr');
+    if (!shortDesc) { showErr('editShortDesc','editShortErr','Short description is required'); valid = false; } else clearErr('editShortDesc','editShortErr');
+    if (!valid) return;
+
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('category', category);
+    formData.append('shortDescription', shortDesc);
+    formData.append('longDescription', document.getElementById('editLongDesc').value.trim());
+    formData.append('material', document.getElementById('editMaterial').value.trim());
+    formData.append('dimensions', document.getElementById('editDimensions').value.trim());
+    formData.append('color', document.getElementById('editColor').value.trim());
+    formData.append('craftsmanship', document.getElementById('editCraft').value.trim());
+    formData.append('care', document.getElementById('editCare').value.trim());
+    formData.append('availability', document.getElementById('editAvailability').value.trim());
+
+    // Separate existing URLs from new Files
+    const existingImageUrls = [];
+    editImageList.forEach(imgObj => {
+        if (imgObj.file) {
+            formData.append('images', imgObj.file);
+        } else {
+            existingImageUrls.push(imgObj.url);
+        }
+    });
+    
+    // We send existingImages as a JSON string so backend can parse it and combine
+    formData.append('existingImages', JSON.stringify(existingImageUrls));
+
+    sheetSave.disabled = true;
+    sheetSave.textContent = 'Saving...';
+
+    try {
+        await updateProduct(editingProduct.id, formData);
+        await loadData();
+        closeSheet();
+        selected.clear();
+        clearSelection();
+    } catch(err) {
+        alert('Error saving product: ' + err.message);
+    } finally {
+        sheetSave.disabled = false;
+        sheetSave.textContent = 'Save Changes';
+    }
+  });
+
+  /* ─── UTILITY ───────────────────────────────────── */
+  function esc(s){ return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function escAttr(s){ return String(s || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function toSlug(s){ return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''); }
+  function showErr(inputId, errId, msg){
+    document.getElementById(inputId).classList.add('error');
+    document.getElementById(errId).textContent = msg;
+  }
+  function clearErr(inputId, errId){
+    document.getElementById(inputId).classList.remove('error');
+    document.getElementById(errId).textContent = '';
+  }
+
+  /* ─── INIT ──────────────────────────────────────── */
+  await loadData();
+
+  // Nav scroll state
+  const navEl = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    navEl.classList.toggle('scrolled', window.scrollY > 80);
+  });
+})();
+</script>
+</body>
+</html>

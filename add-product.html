@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Add Product — SplendyCraft Admin</title>
+<link rel="icon" type="image/png" href="./logo.jpeg">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Cinzel:wght@400;600;700&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+/* ── PAGE LAYOUT ──────────────────────────────────── */
+.add-header{
+  padding:7.5rem 4.5rem 1.5rem;
+  display:flex;align-items:center;gap:1.5rem;
+}
+.add-back{
+  display:inline-flex;align-items:center;gap:0.4rem;
+  font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;
+  color:var(--brown);text-decoration:none;transition:color 0.2s;
+}
+.add-back:hover{color:var(--rust)}
+.add-back svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2}
+.add-title{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(2rem,4vw,2.8rem);font-weight:300;
+  color:var(--dark);line-height:1.15;
+}
+.add-title em{font-style:italic;color:var(--rust)}
+
+.add-form-section{
+  padding:2rem 4.5rem 4rem;
+  max-width:960px;
+}
+
+/* ── FORM FIELDS ──────────────────────────────────── */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.8rem 2.2rem}
+.form-group{display:flex;flex-direction:column;gap:0.45rem}
+.form-group.full{grid-column:1/-1}
+.form-label{
+  font-size:0.66rem;letter-spacing:0.14em;text-transform:uppercase;
+  color:var(--rust);font-weight:500;
+}
+.form-input,.form-textarea,.form-select{
+  width:100%;padding:0.8rem 1rem;
+  font-family:'Jost',sans-serif;font-size:0.9rem;font-weight:300;color:var(--dark);
+  border:1px solid rgba(160,69,26,0.22);background:rgba(255,255,255,0.6);
+  transition:border-color 0.25s,box-shadow 0.25s;
+}
+.form-input:focus,.form-textarea:focus,.form-select:focus{
+  outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,151,58,0.12);
+}
+.form-input.error,.form-textarea.error,.form-select.error{border-color:var(--rust);box-shadow:0 0 0 3px rgba(160,69,26,0.12)}
+.form-textarea{min-height:90px;resize:vertical;line-height:1.7}
+.form-textarea.tall{min-height:140px}
+.form-select{cursor:pointer;appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7' viewBox='0 0 12 7'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235A3410' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 1rem center;padding-right:2.5rem;
+}
+.form-error-msg{font-size:0.74rem;color:var(--rust);font-weight:400;min-height:1em}
+.form-hint{font-size:0.74rem;color:rgba(90,52,16,0.55);font-weight:300}
+
+/* ── ID PREVIEW ───────────────────────────────────── */
+.id-preview{
+  font-size:0.78rem;color:var(--brown);font-weight:300;
+  font-family:'Jost',sans-serif;
+  padding:0.4rem 0.7rem;
+  background:rgba(201,151,58,0.08);
+  border-left:3px solid var(--gold);
+  margin-top:0.3rem;
+}
+.id-preview code{font-family:monospace;color:var(--dark);font-weight:500}
+
+/* ── IMAGE UPLOAD ─────────────────────────────────── */
+.img-upload-zone{
+  border:2px dashed rgba(160,69,26,0.25);padding:2rem;text-align:center;
+  cursor:pointer;transition:all 0.3s;background:rgba(255,255,255,0.4);
+  min-height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.6rem;
+}
+.img-upload-zone:hover,.img-upload-zone.dragover{border-color:var(--gold);background:rgba(201,151,58,0.06)}
+.img-upload-zone svg{width:32px;height:32px;stroke:var(--brown);fill:none;stroke-width:1.5;opacity:0.5}
+.img-upload-zone p{font-size:0.82rem;color:var(--brown);font-weight:300}
+.img-upload-zone p strong{font-weight:500;color:var(--rust)}
+.img-previews{display:flex;flex-wrap:wrap;gap:0.8rem;margin-top:1rem}
+.img-preview-item{
+  position:relative;width:100px;height:100px;overflow:hidden;
+  border:2px solid rgba(201,151,58,0.2);background:#EFE6D4;
+  cursor:grab;transition:border-color 0.25s;
+}
+.img-preview-item:hover{border-color:var(--gold)}
+.img-preview-item.primary{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold)}
+.img-preview-item img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+.img-preview-remove{
+  position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;
+  background:rgba(160,69,26,0.85);color:var(--ivory);border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;font-size:0.7rem;
+  transition:background 0.2s;
+}
+.img-preview-remove:hover{background:var(--rust)}
+.img-preview-primary{
+  position:absolute;bottom:4px;left:4px;
+  font-size:0.5rem;letter-spacing:0.08em;text-transform:uppercase;
+  background:var(--gold);color:var(--dark);padding:2px 6px;font-weight:600;
+}
+.img-preview-item.dragging{opacity:0.4;border-style:dashed}
+
+/* ── BUTTONS ──────────────────────────────────────── */
+.form-actions{
+  display:flex;gap:1rem;margin-top:2.5rem;
+  padding-top:2rem;border-top:1px solid rgba(201,151,58,0.15);
+}
+.btn-save{
+  padding:0.85rem 2.2rem;
+  background:linear-gradient(135deg,var(--gold),var(--gold-lt));
+  color:var(--dark);font-family:'Jost',sans-serif;
+  font-size:0.76rem;letter-spacing:0.14em;text-transform:uppercase;font-weight:600;
+  border:none;cursor:pointer;transition:all 0.35s;
+  box-shadow:0 6px 24px rgba(201,151,58,0.3);
+}
+.btn-save:hover{transform:translateY(-2px);box-shadow:0 10px 32px rgba(201,151,58,0.45)}
+.btn-outline{
+  padding:0.85rem 2.2rem;background:transparent;
+  color:var(--brown);font-family:'Jost',sans-serif;
+  font-size:0.76rem;letter-spacing:0.14em;text-transform:uppercase;font-weight:500;
+  border:1px solid rgba(160,69,26,0.3);cursor:pointer;transition:all 0.3s;
+  text-decoration:none;display:inline-flex;align-items:center;
+}
+.btn-outline:hover{border-color:var(--rust);color:var(--rust)}
+
+/* ── SUCCESS TOAST ────────────────────────────────── */
+.toast{
+  position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(100px);
+  background:var(--dark);color:var(--gold-pale);
+  padding:1rem 2rem;font-size:0.85rem;font-weight:400;
+  box-shadow:0 10px 40px rgba(0,0,0,0.3);
+  z-index:500;opacity:0;transition:all 0.4s cubic-bezier(0.22,1,0.36,1);
+  pointer-events:none;
+}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+/* ── RESPONSIVE ───────────────────────────────────── */
+@media(max-width:880px){
+  .add-header{padding:6.5rem 1.5rem 1.5rem;flex-direction:column;align-items:flex-start}
+  .add-form-section{padding:1.5rem 1.5rem 4rem}
+  .form-grid{grid-template-columns:1fr;gap:1.4rem}
+}
+</style>
+</head>
+<body>
+
+<nav id="nav">
+  <div class="nav-logo">Splendy<em>Craft</em></div>
+  <ul class="nav-links">
+    <li><a href="admin.html">Dashboard</a></li>
+    <li><a href="add-product.html" class="active">Add Product</a></li>
+    <li><a href="products.html" target="_blank">View Site</a></li>
+    <li><a href="#" id="logoutBtn" style="color: var(--rust);">Logout</a></li>
+  </ul>
+</nav>
+
+<!-- HEADER -->
+<header class="add-header">
+  <a href="admin.html" class="add-back">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    Back to Dashboard
+  </a>
+  <h1 class="add-title">Add <em>Product</em></h1>
+</header>
+
+<!-- FORM -->
+<section class="add-form-section">
+  <form id="addForm" novalidate>
+    <div class="form-grid">
+
+      <!-- Name -->
+      <div class="form-group">
+        <label class="form-label" for="pName">Product Name *</label>
+        <input class="form-input" id="pName" type="text" placeholder="e.g. Sacred Wood Carvings">
+        <div class="form-error-msg" id="pNameErr"></div>
+        <div class="id-preview" id="idPreview" style="display:none">
+          ID: <code id="idValue"></code>
+        </div>
+      </div>
+
+      <!-- Category -->
+      <div class="form-group">
+        <label class="form-label" for="pCategory">Category *</label>
+        <select class="form-select" id="pCategory">
+          <option value="">Select category…</option>
+          <!-- populated from existing categories -->
+          <option value="__custom__">+ Add custom category</option>
+        </select>
+        <input class="form-input" id="pCategoryCust" type="text" placeholder="Enter new category" style="display:none;margin-top:0.4rem">
+        <div class="form-error-msg" id="pCatErr"></div>
+      </div>
+
+      <!-- Short Description -->
+      <div class="form-group full">
+        <label class="form-label" for="pShortDesc">Short Description *</label>
+        <textarea class="form-textarea" id="pShortDesc" placeholder="A brief tagline for the product card"></textarea>
+        <div class="form-error-msg" id="pShortErr"></div>
+      </div>
+
+      <!-- Long Description -->
+      <div class="form-group full">
+        <label class="form-label" for="pLongDesc">Long Description</label>
+        <textarea class="form-textarea tall" id="pLongDesc" placeholder="Detailed description for the product detail page"></textarea>
+      </div>
+
+      <!-- Material -->
+      <div class="form-group">
+        <label class="form-label" for="pMaterial">Material</label>
+        <input class="form-input" id="pMaterial" type="text" placeholder="e.g. Solid teakwood">
+      </div>
+
+      <!-- Dimensions -->
+      <div class="form-group">
+        <label class="form-label" for="pDimensions">Dimensions</label>
+        <input class="form-input" id="pDimensions" type="text" placeholder="e.g. 30cm (H) × 20cm (W)">
+      </div>
+
+      <!-- Color -->
+      <div class="form-group">
+        <label class="form-label" for="pColor">Color</label>
+        <input class="form-input" id="pColor" type="text" placeholder="e.g. Warm natural wood tone">
+      </div>
+
+      <!-- Availability -->
+      <div class="form-group">
+        <label class="form-label" for="pAvailability">Availability</label>
+        <input class="form-input" id="pAvailability" type="text" placeholder="e.g. Made to order">
+      </div>
+
+      <!-- Craftsmanship -->
+      <div class="form-group full">
+        <label class="form-label" for="pCraft">Craftsmanship</label>
+        <textarea class="form-textarea" id="pCraft" placeholder="Describe the artisan techniques used"></textarea>
+      </div>
+
+      <!-- Care -->
+      <div class="form-group full">
+        <label class="form-label" for="pCare">Care Instructions</label>
+        <textarea class="form-textarea" id="pCare" placeholder="How to care for and maintain the product"></textarea>
+      </div>
+
+      <!-- Images -->
+      <div class="form-group full">
+        <label class="form-label">Product Images</label>
+        <div class="img-upload-zone" id="uploadZone">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <p><strong>Click to upload</strong> or drag and drop</p>
+          <p class="form-hint">The first image will be the primary thumbnail</p>
+        </div>
+        <input type="file" id="fileInput" accept="image/*" multiple style="display:none">
+        <div class="img-previews" id="imgPreviews"></div>
+        <div class="form-error-msg" id="pImgErr"></div>
+      </div>
+
+    </div>
+
+    <!-- Actions -->
+    <div class="form-actions">
+      <button type="submit" class="btn-save">Save Product</button>
+      <a href="admin.html" class="btn-outline">Cancel</a>
+    </div>
+  </form>
+</section>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<footer>
+  <div class="footer-top">
+    <div class="footer-logo">Splendy<em>Craft</em></div>
+    <div class="footer-tagline">Admin Portal</div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 SplendyCraft. All rights reserved.</span>
+    <span>Internal use only ✦</span>
+  </div>
+</footer>
+
+<script type="module">
+import { requireAuth, logout } from "./js/auth.js";
+import { getProducts, createProduct, getCategories } from "./js/api.js";
+
+(async function(){
+  // Guard the page
+  await requireAuth();
+
+  document.getElementById('logoutBtn').addEventListener('click', (e) => {
+    e.preventDefault();
+    logout();
+  });
+
+  /* ─── STATE ─────────────────────────────────────── */
+  let imageList = []; // Array of { file: File, url: String }
+  let dragSrcIndex = null;
+  
+  // Fetch existing products to populate categories and check for duplicate IDs
+  const existingProducts = await getProducts();
+
+  /* ─── DOM REFS ──────────────────────────────────── */
+  const form = document.getElementById('addForm');
+  const nameInput = document.getElementById('pName');
+  const idPreview = document.getElementById('idPreview');
+  const idValue = document.getElementById('idValue');
+  const catSelect = document.getElementById('pCategory');
+  const catCust = document.getElementById('pCategoryCust');
+  const uploadZone = document.getElementById('uploadZone');
+  const fileInput = document.getElementById('fileInput');
+  const toast = document.getElementById('toast');
+
+  /* ─── POPULATE CATEGORIES ───────────────────────── */
+  const cats = getCategories(existingProducts);
+  const customOpt = catSelect.querySelector('option[value="__custom__"]');
+  cats.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c;
+    opt.textContent = c;
+    catSelect.insertBefore(opt, customOpt);
+  });
+
+  /* ─── LIVE ID PREVIEW ───────────────────────────── */
+  nameInput.addEventListener('input', () => {
+    const val = nameInput.value.trim();
+    if (val) {
+      idPreview.style.display = 'block';
+      idValue.textContent = toSlug(val);
+    } else {
+      idPreview.style.display = 'none';
+    }
+  });
+
+  /* ─── CATEGORY CUSTOM TOGGLE ────────────────────── */
+  catSelect.addEventListener('change', () => {
+    catCust.style.display = catSelect.value === '__custom__' ? 'block' : 'none';
+  });
+
+  /* ─── IMAGE UPLOAD ──────────────────────────────── */
+  uploadZone.addEventListener('click', () => fileInput.click());
+  uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+  uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+  uploadZone.addEventListener('drop', e => {
+    e.preventDefault(); uploadZone.classList.remove('dragover');
+    handleFiles(e.dataTransfer.files);
+  });
+  fileInput.addEventListener('change', () => {
+    handleFiles(fileInput.files);
+    fileInput.value = '';
+  });
+
+  function handleFiles(files){
+    [...files].forEach(file => {
+      if (!file.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        imageList.push({ file: file, url: e.target.result });
+        renderPreviews();
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function renderPreviews(){
+    const container = document.getElementById('imgPreviews');
+    container.innerHTML = '';
+
+    imageList.forEach((imgObj, i) => {
+      const src = imgObj.url;
+      const item = document.createElement('div');
+      item.className = 'img-preview-item' + (i === 0 ? ' primary' : '');
+      item.draggable = true;
+      item.dataset.index = i;
+      item.innerHTML = `
+        <img src="${src}" alt="Image ${i+1}">
+        <button class="img-preview-remove" type="button" data-index="${i}">✕</button>
+        ${i === 0 ? '<span class="img-preview-primary">Primary</span>' : ''}
+      `;
+
+      // Remove
+      item.querySelector('.img-preview-remove').addEventListener('click', e => {
+        e.stopPropagation();
+        imageList.splice(i, 1);
+        renderPreviews();
+      });
+
+      // Click to set as primary
+      item.addEventListener('click', () => {
+        if (i === 0) return;
+        const [moved] = imageList.splice(i, 1);
+        imageList.unshift(moved);
+        renderPreviews();
+      });
+
+      // Drag reorder
+      item.addEventListener('dragstart', e => {
+        dragSrcIndex = i;
+        item.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+      });
+      item.addEventListener('dragend', () => item.classList.remove('dragging'));
+      item.addEventListener('dragover', e => e.preventDefault());
+      item.addEventListener('drop', e => {
+        e.preventDefault();
+        if (dragSrcIndex === null || dragSrcIndex === i) return;
+        const [moved] = imageList.splice(dragSrcIndex, 1);
+        imageList.splice(i, 0, moved);
+        dragSrcIndex = null;
+        renderPreviews();
+      });
+
+      container.appendChild(item);
+    });
+  }
+
+  /* ─── FORM SUBMIT ───────────────────────────────── */
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+
+    const name = nameInput.value.trim();
+    let category = catSelect.value;
+    if (category === '__custom__') category = catCust.value.trim();
+    const shortDesc = document.getElementById('pShortDesc').value.trim();
+
+    // Validate
+    let valid = true;
+    if (!name) { showErr('pName','pNameErr','Product name is required'); valid = false; } else clearErr('pName','pNameErr');
+    if (!category) { showErr('pCategory','pCatErr','Category is required'); valid = false; } else clearErr('pCategory','pCatErr');
+    if (!shortDesc) { showErr('pShortDesc','pShortErr','Short description is required'); valid = false; } else clearErr('pShortDesc','pShortErr');
+
+    // Check for duplicate ID
+    const newId = toSlug(name);
+    if (existingProducts.some(p => p.id === newId)){
+      showErr('pName','pNameErr','A product with this name already exists');
+      valid = false;
+    }
+
+    if (!valid) {
+      // Scroll to first error
+      const firstErr = form.querySelector('.error');
+      if (firstErr) firstErr.scrollIntoView({ behavior:'smooth', block:'center' });
+      return;
+    }
+
+    // Build FormData object
+    const formData = new FormData();
+    formData.append('id', newId);
+    formData.append('name', name);
+    formData.append('category', category);
+    formData.append('shortDescription', shortDesc);
+    formData.append('longDescription', document.getElementById('pLongDesc').value.trim());
+    formData.append('material', document.getElementById('pMaterial').value.trim());
+    formData.append('dimensions', document.getElementById('pDimensions').value.trim());
+    formData.append('color', document.getElementById('pColor').value.trim());
+    formData.append('craftsmanship', document.getElementById('pCraft').value.trim());
+    formData.append('care', document.getElementById('pCare').value.trim());
+    formData.append('availability', document.getElementById('pAvailability').value.trim());
+
+    if (imageList.length > 0) {
+        imageList.forEach(imgObj => {
+            formData.append('images', imgObj.file);
+        });
+    }
+
+    // Save
+    const saveBtn = form.querySelector('.btn-save');
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saving...';
+    
+    try {
+        await createProduct(formData);
+        showToast('Product saved successfully!');
+        setTimeout(() => { window.location.href = 'admin.html'; }, 1200);
+    } catch (err) {
+        showToast('Error saving product: ' + err.message);
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save Product';
+    }
+  });
+
+  /* ─── UTILITY ───────────────────────────────────── */
+  function toSlug(s){ return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''); }
+  function showErr(inputId, errId, msg){
+    document.getElementById(inputId).classList.add('error');
+    document.getElementById(errId).textContent = msg;
+  }
+  function clearErr(inputId, errId){
+    document.getElementById(inputId).classList.remove('error');
+    document.getElementById(errId).textContent = '';
+  }
+  function showToast(msg){
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2500);
+  }
+
+  /* ─── NAV SCROLL ────────────────────────────────── */
+  const navEl = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    navEl.classList.toggle('scrolled', window.scrollY > 80);
+  });
+})();
+</script>
+</body>
+</html>

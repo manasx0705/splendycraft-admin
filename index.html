@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SplendyCraft Admin</title>
+
+    <link rel="stylesheet" href="css/login.css">
+    <style src="login.css"></style>
+</head>
+
+<body>
+
+    <div class="background"></div>
+
+    <div class="login-container">
+
+        <img src="assets/logo.png" class="logo" alt="SplendyCraft">
+
+        <h1>Admin Portal</h1>
+        <p class="subtitle">Sign in to manage products</p>
+
+        <form id="loginForm">
+
+            <div class="input-group">
+
+                <label>Email</label>
+
+                <input type="email" id="email" placeholder="Enter your email" required>
+
+            </div>
+
+            <div class="input-group">
+
+                <label>Password</label>
+
+                <input type="password" id="password" placeholder="Enter your password" required>
+
+            </div>
+
+            <button type="submit">
+
+                Login
+
+            </button>
+
+            <p id="error" class="error"></p>
+
+        </form>
+
+    </div>
+
+    <script type="module" src="js/auth.js"></script>
+
+
+</body>
+
+</html>

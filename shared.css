@@ -1,0 +1,77 @@
+/* ==========================================================================
+   SplendyCraft — Shared Design Tokens & Chrome
+   Extracted from index.html so the nav, footer, and base type system stay
+   pixel-identical across every page (index.html, products.html, product.html).
+   Do not duplicate these rules inside page-specific stylesheets.
+   ========================================================================== */
+
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --gold:#C9973A;--gold-lt:#E2B96A;--gold-pale:#F5DFA0;
+  --rust:#A0451A;--rust-lt:#C96B3A;
+  --teal:#1E6B68;--teal-lt:#2D9490;
+  --plum:#5C2D5E;--plum-lt:#8B4A8D;
+  --cream:#F7F0E4;--ivory:#FDF8F0;
+  --dark:#1A1208;--dark2:#2C1F0F;
+  --brown:#5A3410;--brown-lt:#8B5E2A;
+  --warm-grey:#E8E0D2;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Jost',sans-serif;background:var(--ivory);color:var(--dark);overflow-x:hidden}
+
+/* NAV */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:200;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:1rem 3.5rem;
+  background:rgba(253,248,240,0.86);
+  backdrop-filter:blur(28px) saturate(1.8);
+  -webkit-backdrop-filter:blur(28px) saturate(1.8);
+  border-bottom:1px solid rgba(201,151,58,0.18);
+  box-shadow:0 2px 40px rgba(90,52,16,0.08);
+  transition:padding 0.3s,background 0.3s;
+}
+nav.scrolled{background:rgba(253,248,240,0.92);padding:0.7rem 3.5rem}
+.nav-logo{font-family:'Cinzel',serif;font-size:1.12rem;letter-spacing:0.12em;color:var(--dark);transition:color 0.3s}
+.nav-logo em{font-style:italic;font-family:'Cormorant Garamond',serif;font-size:1.32rem;color:var(--gold)}
+.nav-links{display:flex;gap:2.5rem;list-style:none}
+.nav-links a{font-size:0.71rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--brown);text-decoration:none;transition:color 0.2s}
+.nav-links a:hover,.nav-links a.active{color:var(--gold)}
+
+@media(max-width:880px){
+  nav{padding:0.9rem 1.5rem}
+  nav.scrolled{padding:0.7rem 1.5rem}
+  .nav-links{display:none}
+}
+
+/* REVEAL (shared IntersectionObserver animation used across all pages) */
+.reveal{opacity:0;transform:translateY(26px);transition:opacity 0.85s ease,transform 0.85s ease}
+.reveal.up{opacity:1;transform:translateY(0)}
+.d1{transition-delay:0.12s}.d2{transition-delay:0.24s}.d3{transition-delay:0.36s}
+
+/* SECTION HEADER PATTERN (eyebrow / headline / rule) */
+.eyebrow{font-size:0.61rem;letter-spacing:0.38em;text-transform:uppercase;margin-bottom:1rem}
+.headline{font-family:'Cormorant Garamond',serif;font-size:clamp(2.4rem,4.5vw,3.8rem);font-weight:300;line-height:1.12;margin-bottom:1.6rem}
+.headline em{font-style:italic}
+.rule{width:56px;height:2px;margin-bottom:1.8rem}
+
+/* FOOTER */
+footer{background:var(--dark);padding:2.8rem 4.5rem 1.5rem}
+.footer-top{display:flex;justify-content:space-between;align-items:center;padding-bottom:1.8rem;border-bottom:1px solid rgba(201,151,58,0.1);margin-bottom:1.5rem}
+.footer-logo{font-family:'Cinzel',serif;font-size:1.05rem;letter-spacing:0.12em;color:var(--ivory)}
+.footer-logo em{font-style:italic;font-family:'Cormorant Garamond',serif;font-size:1.22rem;color:var(--gold)}
+.footer-tagline{font-size:0.78rem;color:rgba(253,248,240,0.3);font-weight:300}
+.footer-bottom{display:flex;justify-content:space-between;font-size:0.67rem;color:rgba(253,248,240,0.2)}
+
+@media(max-width:880px){
+  footer{padding:2.5rem 1.5rem 1.5rem}
+  .footer-top,.footer-bottom{flex-direction:column;gap:0.6rem;text-align:center}
+}
+
+/* Accessibility: respect reduced-motion preference */
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.01ms !important;scroll-behavior:auto !important}
+}
+
+/* Visible keyboard focus (site-wide, was implicit before — needed now that Products has real controls) */
+a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-offset:3px}

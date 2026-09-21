@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Our Collections — SplendyCraft</title>
+<meta name="description" content="Browse SplendyCraft's curated collection of handcrafted Indian heritage decor — wood carvings, Bidriware, Pattachitra, Madhubani art, and more.">
+<link rel="icon" type="image/png" href="./logo.jpeg">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Cinzel:wght@400;600;700&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+/* PAGE HEADER */
+.products-header{padding:9rem 4.5rem 3rem;text-align:center;background:var(--ivory)}
+.products-header .eyebrow{color:var(--rust);justify-content:center;display:flex;align-items:center;gap:0.9rem}
+.products-header .eyebrow::before{content:'';width:38px;height:1px;background:var(--rust)}
+.products-header .eyebrow::after{content:'';width:38px;height:1px;background:var(--rust)}
+.products-header .headline{color:var(--dark)}
+.products-header .headline em{color:var(--rust)}
+.products-header .rule{background:linear-gradient(to right,transparent,var(--rust),transparent);margin:0 auto 1.6rem}
+.products-header p{max-width:560px;margin:0 auto;font-size:1rem;line-height:1.82;font-weight:300;color:var(--brown)}
+
+/* SEARCH + FILTER BAR */
+.control-bar{
+  position:sticky;top:76px;z-index:100;
+  background:rgba(253,248,240,0.94);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid rgba(201,151,58,0.16);
+  padding:1.4rem 4.5rem;
+  display:flex;flex-wrap:wrap;gap:1.2rem;align-items:center;justify-content:space-between;
+}
+.search-wrap{position:relative;flex:1;min-width:240px;max-width:380px}
+.search-wrap input{
+  width:100%;padding:0.75rem 1rem 0.75rem 2.4rem;
+  border:1px solid rgba(160,69,26,0.25);background:rgba(255,255,255,0.6);
+  font-family:'Jost',sans-serif;font-size:0.85rem;font-weight:300;color:var(--dark);
+  transition:border-color 0.25s,box-shadow 0.25s;
+}
+.search-wrap input::placeholder{color:rgba(90,52,16,0.45);letter-spacing:0.04em}
+.search-wrap input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,151,58,0.12)}
+.search-icon{position:absolute;left:0.8rem;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--rust);pointer-events:none}
+.filter-row{display:flex;flex-wrap:wrap;gap:0.6rem}
+.filter-chip{
+  font-size:0.66rem;letter-spacing:0.12em;text-transform:uppercase;font-weight:500;
+  padding:0.5rem 1.1rem;border:1px solid rgba(160,69,26,0.28);background:transparent;color:var(--brown);
+  cursor:pointer;transition:all 0.25s;font-family:'Jost',sans-serif;
+}
+.filter-chip:hover{border-color:var(--rust);color:var(--rust)}
+.filter-chip.active{background:var(--rust);border-color:var(--rust);color:var(--ivory)}
+
+/* GRID */
+.products-grid-section{padding:3.5rem 4.5rem 6rem;background:var(--ivory)}
+.products-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:2rem}
+.product-card{
+  background:var(--cream);border:1px solid rgba(201,151,58,0.14);
+  display:flex;flex-direction:column;overflow:hidden;
+  transition:transform 0.4s cubic-bezier(0.22,1,0.36,1),box-shadow 0.4s cubic-bezier(0.22,1,0.36,1),border-color 0.4s;
+}
+.product-card:hover{transform:translateY(-8px);box-shadow:0 24px 48px rgba(90,52,16,0.16);border-color:rgba(201,151,58,0.4)}
+.product-card-img{width:100%;height:280px;overflow:hidden;position:relative;background:#EFE6D4}
+.product-card-img img{width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.6s cubic-bezier(0.22,1,0.36,1)}
+.product-card:hover .product-card-img img{transform:scale(1.08)}
+.product-card-category{
+  position:absolute;top:0.9rem;left:0.9rem;
+  font-size:0.6rem;letter-spacing:0.14em;text-transform:uppercase;
+  background:rgba(26,18,8,0.72);color:var(--gold-pale);padding:0.35rem 0.75rem;
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+}
+.product-card-body{padding:1.6rem 1.5rem 1.8rem;display:flex;flex-direction:column;flex:1}
+.product-card-name{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:400;color:var(--dark);margin-bottom:0.6rem;line-height:1.2}
+.product-card-desc{font-size:0.87rem;line-height:1.65;font-weight:300;color:var(--brown);margin-bottom:1.4rem;flex:1}
+.view-btn{
+  align-self:flex-start;font-size:0.68rem;letter-spacing:0.15em;text-transform:uppercase;font-weight:500;
+  padding:0.65rem 1.4rem;border:1px solid var(--gold);color:var(--brown);text-decoration:none;
+  background:rgba(201,151,58,0.06);transition:all 0.3s;position:relative;
+}
+.view-btn:hover{background:var(--gold);color:var(--ivory);box-shadow:0 0 20px rgba(201,151,58,0.4)}
+
+/* EMPTY STATE */
+.empty-state{display:none;text-align:center;padding:5rem 1rem;color:var(--brown)}
+.empty-state.show{display:block}
+.empty-state h3{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:400;color:var(--dark);margin-bottom:0.6rem}
+.empty-state p{font-size:0.92rem;font-weight:300}
+
+@media(max-width:880px){
+  .products-header{padding:7rem 1.5rem 2.5rem}
+  .control-bar{padding:1.1rem 1.5rem;top:64px}
+  .products-grid-section{padding:2.5rem 1.5rem 4rem}
+  .products-grid{grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1.4rem}
+}
+@media(max-width:520px){
+  .products-grid{grid-template-columns:1fr}
+  .search-wrap{max-width:none}
+}
+</style>
+</head>
+<body>
+
+<nav id="nav">
+  <div class="nav-logo">Splendy<em>Craft</em></div>
+  <ul class="nav-links">
+    <li><a href="index.html#home">Home</a></li>
+    <li><a href="index.html#story">Our Story</a></li>
+    <li><a href="index.html#why">Why Us</a></li>
+    <li><a href="products.html" class="active">Products</a></li>
+    <li><a href="index.html#support">Support</a></li>
+    <li><a href="index.html#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<header class="products-header">
+  <div class="eyebrow reveal">The Collection</div>
+  <h1 class="headline reveal d1">Our <em>Collections</em></h1>
+  <div class="rule reveal d1"></div>
+  <p class="reveal d2">Every piece here is handcrafted by artisans across India. Browse the collection, and reach out on WhatsApp for pricing and availability on anything that catches your eye.</p>
+</header>
+
+<div class="control-bar">
+  <div class="search-wrap">
+    <svg class="search-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.6"/>
+      <line x1="16.5" y1="16.5" x2="21" y2="21" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+    </svg>
+    <input type="text" id="searchInput" placeholder="Search collections…" aria-label="Search products">
+  </div>
+  <div class="filter-row" id="filterRow" role="group" aria-label="Filter by category"></div>
+</div>
+
+<section class="products-grid-section">
+  <div class="products-grid" id="productsGrid"></div>
+  <div class="empty-state" id="emptyState">
+    <h3>No pieces match just yet</h3>
+    <p>Try a different search term or clear the filters above.</p>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-top">
+    <div class="footer-logo">Splendy<em>Craft</em></div>
+    <div class="footer-tagline">Curated Heritage, Elevated Living</div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2026 SplendyCraft. All rights reserved.</span>
+    <span>Made with devotion in India ✦</span>
+  </div>
+</footer>
+
+<script type="module">
+import { getProducts } from "./product-Firestore.js";
+
+(async function(){
+  const grid = document.getElementById('productsGrid');
+  const emptyState = document.getElementById('emptyState');
+  const searchInput = document.getElementById('searchInput');
+  const filterRow = document.getElementById('filterRow');
+
+  /* Read from the shared data layer (backend API) */
+  const allProducts = await getProducts();
+
+  const categories = ['All', ...new Set(allProducts.map(p => p.category))];
+  let activeCategory = 'All';
+
+  // Build filter chips
+  categories.forEach(cat => {
+    const chip = document.createElement('button');
+    chip.className = 'filter-chip' + (cat === 'All' ? ' active' : '');
+    chip.textContent = cat;
+    chip.type = 'button';
+    chip.addEventListener('click', () => {
+      activeCategory = cat;
+      [...filterRow.children].forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      render();
+    });
+    filterRow.appendChild(chip);
+  });
+
+  function matchesSearch(product, query){
+    if (!query) return true;
+    const haystack = (product.name + ' ' + product.shortDescription + ' ' + product.category).toLowerCase();
+    return haystack.includes(query);
+  }
+
+  function render(){
+    const query = searchInput.value.trim().toLowerCase();
+    const filtered = allProducts.filter(p =>
+      (activeCategory === 'All' || p.category === activeCategory) && matchesSearch(p, query)
+    );
+
+    grid.innerHTML = '';
+    filtered.forEach((p, i) => {
+      const card = document.createElement('div');
+      card.className = 'product-card reveal';
+      card.innerHTML = `
+        <div class="product-card-img">
+          <span class="product-card-category">${p.category}</span>
+          <img src="${p.images[0]}" alt="${p.name}" loading="lazy">
+        </div>
+        <div class="product-card-body">
+          <div class="product-card-name">${p.name}</div>
+          <div class="product-card-desc">${p.shortDescription}</div>
+          <a class="view-btn" href="product.html?id=${encodeURIComponent(p.id)}">View Product</a>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+
+    emptyState.classList.toggle('show', filtered.length === 0);
+    observeReveals();
+  }
+
+  // Instant filtering as the user types
+  searchInput.addEventListener('input', render);
+
+  // Fade-in-on-scroll, same pattern used site-wide
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('up'); });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+  function observeReveals(){
+    document.querySelectorAll('.reveal:not(.up)').forEach(el => obs.observe(el));
+  }
+
+  render();
+  observeReveals();
+
+  // Nav scroll state (matches index.html behavior)
+  const navEl = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    navEl.classList.toggle('scrolled', window.scrollY > 80);
+  });
+})();
+</script>
+</body>
+</html>
