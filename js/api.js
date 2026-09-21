@@ -1,6 +1,6 @@
 import { auth } from "./firebase.js";
 
-const API_BASE_URL = "http://localhost:5000/api";
+const API_BASE_URL = "https://splendycraft-backend.onrender.com/api";
 
 /**
  * Gets the current user's Firebase ID token.
